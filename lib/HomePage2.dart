@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:weather_app/model/weather_model.dart';
 import 'package:weather_app/repository/weather_repository.dart';
+import 'package:weather_app/util/Util.dart';
 
 class HomePage2 extends StatefulWidget {
   @override
@@ -32,6 +33,7 @@ class _HomePage2State extends State<HomePage2> {
     var urlWeather = "https://ibnux.github.io/BMKG-importer/cuaca/$id.json";
     var response = await http.get(Uri.parse(urlWeather));
     print('Weather $urlWeather');
+    print(dropdownItems.first);
     setState(() {
       var convertDataToJson = jsonDecode(response.body);
       dataWeather = convertDataToJson;
@@ -63,83 +65,151 @@ class _HomePage2State extends State<HomePage2> {
       title: 'Weather App',
       home: Scaffold(
         body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                Color.fromARGB(255, 99, 64, 255),
+                Color.fromARGB(255, 143, 87, 255),
+                Color.fromARGB(255, 174, 134, 253),
+              ], // Gradient from https://learnui.design/tools/gradient-generator.html
+              tileMode: TileMode.mirror,
+            ),
+          ),
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 100,
-              ),
-              Center(
-                child: DropdownButton<DropdownItem>(
-                  value: selectedDropdownItem,
-                  items: dropdownItems.map((item) {
-                    return DropdownMenuItem<DropdownItem>(
-                      value: item,
-                      child: Text(item.kota),
-                    );
-                  }).toList(),
-                  onChanged: (item) {
-                    setState(() {
-                      selectedDropdownItem = item;
-                      _getDataWeather();
-                    });
-                  },
+          child: Container(
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 100,
                 ),
-              ),
-              Center(
-                child: selectedDropdownItem != null
-                    ? Text('${selectedDropdownItem!.kecamatan}')
-                    : Text(''),
-              ),
-              SizedBox(
-                height: 70,
-              ),
-              Center(
-                child: dataWeather == null
-                    ? Center(child: CircularProgressIndicator())
-                    : Text(dataWeather?[2]['cuaca']),
-                // child: RefreshIndicator(
-                //   onRefresh: _fetchData,
-                //   child: dataWeather == null
-                //       ? Center(child: CircularProgressIndicator())
-                //       : ListView.builder(
-                //           itemCount:
-                //               dataWeather == null ? 0 : dataWeather!.length,
-                //           itemBuilder: (BuildContext context, int index) {
-                //             return Container(
-                //               padding: EdgeInsets.all(5.0),
-                //               child: Column(
-                //                 children: [
-                //                   GestureDetector(
-                //                     onTap: () {
-                //                       print(dataWeather![index]["jamCuaca"]);
-                //                     },
-                //                     child: Padding(
-                //                       padding: EdgeInsets.all(16.0),
-                //                       child: Row(
-                //                         children: [
-                //                           SizedBox(width: 10),
-                //                           Column(
-                //                             children: [
-                //                               Text(dataWeather![index]
-                //                                       ["cuaca"] +
-                //                                   " " +
-                //                                   dataWeather![index]["tempC"]),
-                //                               Text(dataWeather![index]["tempF"])
-                //                             ],
-                //                           )
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ),
-                //                   Divider()
-                //                 ],
-                //               ),
-                //             );
-                //           }),
-                // ),
-              ),
-            ],
+                Center(
+                  child: DropdownButton<DropdownItem>(
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    ),
+                    style: TextStyle(fontSize: 20),
+                    alignment: Alignment.center,
+                    hint: Text('Pilih Kabupaten'),
+                    dropdownColor: Color.fromARGB(255, 145, 235, 247),
+                    value: selectedDropdownItem,
+                    items: dropdownItems.map((item) {
+                      return DropdownMenuItem<DropdownItem>(
+                        value: item,
+                        child: Text(
+                          item.kota,
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (item) {
+                      setState(() {
+                        selectedDropdownItem = item;
+                        _getDataWeather();
+                      });
+                    },
+                  ),
+                ),
+                Center(
+                  child: selectedDropdownItem != null
+                      ? Text(
+                          '${selectedDropdownItem!.kecamatan}',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 18),
+                        )
+                      : Text(''),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                dataWeather == null
+                    ? Text(" ")
+                    : Text(
+                        '${dataWeather?[2]['tempC']}\u2103',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 100),
+                      ),
+                SizedBox(
+                  height: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: dataWeather == null
+                      ? Text('')
+                      : Text(dataWeather?[2]['jamCuaca'],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                          )),
+                ),
+                dataWeather == null
+                    ? Text('')
+                    : Text(dataWeather?[2]['cuaca'],
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        )),
+                Center(
+                  child: dataWeather == null
+                      ? Center(child: CircularProgressIndicator())
+                      : Image.asset(
+                          weatherIcon(dataWeather?[2]['cuaca']),
+                          width: 150,
+                          height: 150,
+                        ),
+                  // child: RefreshIndicator(
+                  //   onRefresh: _fetchData,
+                  //   child: dataWeather == null
+                  //       ? Center(child: CircularProgressIndicator())
+                  //       : ListView.builder(
+                  //           itemCount:
+                  //               dataWeather == null ? 0 : dataWeather!.length,
+                  //           itemBuilder: (BuildContext context, int index) {
+                  //             return Container(
+                  //               padding: EdgeInsets.all(5.0),
+                  //               child: Column(
+                  //                 children: [
+                  //                   GestureDetector(
+                  //                     onTap: () {
+                  //                       print(dataWeather![index]["jamCuaca"]);
+                  //                     },
+                  //                     child: Padding(
+                  //                       padding: EdgeInsets.all(16.0),
+                  //                       child: Row(
+                  //                         children: [
+                  //                           SizedBox(width: 10),
+                  //                           Column(
+                  //                             children: [
+                  //                               Text(dataWeather![index]
+                  //                                       ["cuaca"] +
+                  //                                   " " +
+                  //                                   dataWeather![index]["tempC"]),
+                  //                               Text(dataWeather![index]["tempF"])
+                  //                             ],
+                  //                           )
+                  //                         ],
+                  //                       ),
+                  //                     ),
+                  //                   ),
+                  //                   Divider()
+                  //                 ],
+                  //               ),
+                  //             );
+                  //           }),
+                  // ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
