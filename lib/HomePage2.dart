@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:weather_app/data/repositories/location_repository.dart';
+import 'package:weather_app/data/repositories/weather_repository.dart';
 import 'package:weather_app/domain/models/location_item.dart';
+import 'package:weather_app/domain/models/weather_item.dart';
 import 'package:weather_app/domain/usecases/get_location_items_usecase.dart';
+import 'package:weather_app/domain/usecases/get_weather_items_usecase.dart';
+import 'package:weather_app/util/Util.dart';
 
 class HomePage2 extends StatefulWidget {
   @override
@@ -11,8 +15,15 @@ class HomePage2 extends StatefulWidget {
 class _HomePage2State extends State<HomePage2> with TickerProviderStateMixin {
   List<LocationItem>? _locationItems;
   LocationItem? _selectedlocationItem;
+
+  List<WeatherItem>? _weatherItems;
+
+  // Usecase
   final GetLocationItemsUsecase _getLocationItemsUsecase =
       GetLocationItemsUsecaseImpl(LocationRepositoryImpl());
+
+  final GetWeatherItemsUsecase _getWeatherItemsUsecase =
+      GetWeatherItemsUsecaseImpl(WeatherRepositoryImpl());
   late TabController _tabController;
 
   @override
@@ -28,6 +39,14 @@ class _HomePage2State extends State<HomePage2> with TickerProviderStateMixin {
     setState(() {
       _locationItems = data;
       _selectedlocationItem = _locationItems?[0];
+    });
+  }
+
+  void _fetchWeatherItems(String idLocation) async {
+    final List<WeatherItem> data =
+        await _getWeatherItemsUsecase.execute(idLocation);
+    setState(() {
+      _weatherItems = data;
     });
   }
 
@@ -110,6 +129,7 @@ class _HomePage2State extends State<HomePage2> with TickerProviderStateMixin {
                             onChanged: (value) {
                               setState(() {
                                 _selectedlocationItem = value as LocationItem;
+                                _fetchWeatherItems(value.id);
                               });
                             },
                           ),
@@ -128,46 +148,48 @@ class _HomePage2State extends State<HomePage2> with TickerProviderStateMixin {
                   SizedBox(
                     height: 20,
                   ),
-                  // dataWeather == null
-                  //     ? Text(" ")
-                  //     : Text(
-                  //         '${dataWeather?[1]['tempC']}\u2103',
-                  //         style: TextStyle(
-                  //             color: Colors.white,
-                  //             fontWeight: FontWeight.w400,
-                  //             fontSize: 100),
-                  //       ),
-                  // SizedBox(
-                  //   height: 20,
-                  // ),
-                  // Padding(
-                  //   padding: const EdgeInsets.all(8.0),
-                  //   child: dataWeather == null
-                  //       ? Text('')
-                  //       : Text(dataWeather?[1]['jamCuaca'],
-                  //           style: TextStyle(
-                  //             color: Colors.white,
-                  //             fontWeight: FontWeight.w400,
-                  //             fontSize: 16,
-                  //           )),
-                  // ),
-                  // dataWeather == null
-                  //     ? Text('')
-                  //     : Text(dataWeather?[1]['cuaca'],
-                  //         style: TextStyle(
-                  //           color: Colors.white,
-                  //           fontWeight: FontWeight.w700,
-                  //           fontSize: 18,
-                  //         )),
-                  // Center(
-                  //   child: dataWeather == null
-                  //       ? Center(child: CircularProgressIndicator())
-                  //       : Image.asset(
-                  //           weatherIcon(dataWeather?[1]['cuaca']),
-                  //           width: 150,
-                  //           height: 150,
-                  //         ),
-                  // ),
+                  _weatherItems == null
+                      ? Text(" ")
+                      : Text(
+                          '${_weatherItems?[0].tempC}\u2103',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 100),
+                        ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _weatherItems == null
+                        ? Text('')
+                        : Text('${_weatherItems?[1].jamCuaca}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                            )),
+                  ),
+                  _weatherItems == null
+                      ? Text('')
+                      : Text('${_weatherItems?[1].cuaca}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                          )),
+                  Center(
+                    child: _weatherItems == null
+                        ? Center(child: CircularProgressIndicator())
+                        : weatherIcon('${_weatherItems?[1].cuaca}') == 'null'
+                            ? Text('Tidak ada ikon')
+                            : Image.asset(
+                                weatherIcon('${_weatherItems?[1].cuaca}'),
+                                width: 150,
+                                height: 150,
+                              ),
+                  ),
                   DefaultTabController(
                     length: 2,
                     child: Column(

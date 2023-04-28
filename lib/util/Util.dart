@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 String weatherIcon(String $weatherStatus) {
   switch ($weatherStatus) {
     case "Cerah Berawan":
@@ -9,7 +11,7 @@ String weatherIcon(String $weatherStatus) {
     case "Cerah":
       return 'assets/icon/sun.png';
     default:
-      return 'Tidak Diketahui';
+      return 'null';
   }
   // if ($weatherStatus == "Cerah Berawan") {
   //   return 'assets/icon/partly-cloudy.png';
